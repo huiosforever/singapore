@@ -1,8 +1,26 @@
+# Core Streamlit App Framework
 streamlit==1.35.0
+
+# Data Handling
 pandas==2.2.2
 numpy==1.26.4
+
+# Visualization
 plotly==5.22.0
-faker==25.2.0
-scikit-learn==1.5.0
 matplotlib==3.9.0
+
+# Data Generation & Simulation
+faker==25.2.0
+
+# Machine Learning / Scoring Engine
+scikit-learn==1.5.0
+
+# Trend Signal Extraction
 pytrends==4.9.2
+
+# Optional: Data API Parsing & Caching
+requests==2.31.0
+python-dotenv==1.0.1
+
+# Optional: Enhance Streamlit UX (e.g., better layout, sidebar tools)
+streamlit-extras==0.3.7
