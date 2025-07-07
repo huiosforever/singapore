@@ -1,15 +1,17 @@
 """
-First‑Impression Personalization Engine (FIPE) — Streamlit Demo
+First-Impression Personalization Engine (FIPE) - Streamlit Demo
 ================================================================
-Luxury‑hotel arrival personalization prototype for Bay Street Hospitality.
+Luxury hotel arrival personalization prototype for Bay Street Hospitality.
 
-• Demonstrates how public‑demand signals (Google Trends, IG geotags, flight
-  manifests) + PMS/CRM data can be fused into a dynamic arrival playbook.
-• Uses fully synthetic data so the app can be shared publicly without NDA risk.
-• Designed for rapid deployment via `streamlit run fipe_app.py` or inside a
+- Demonstrates how public demand signals (Google Trends, IG geotags, flight
+  manifests) plus PMS/CRM data can be fused into a dynamic arrival playbook.
+- Uses fully synthetic data so the app can be shared publicly without NDA risk.
+- Designed for rapid deployment via `streamlit run app.py` or inside a
   container on Railway/Vercel.
 
-Author: Bay Street Quantamental Terminal proto‑team — 2025‑07‑07
+Author: Bay Street Quantamental Terminal proto-team
+Date: 2025-07-07
+Tested with: Python 3.13
 """
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ import plotly.express as px
 import streamlit as st
 
 ################################################################################
-# ----------------------------- CONFIGURATION ---------------------------------#
+# CONFIGURATION
 ################################################################################
 
 st.set_page_config(
@@ -52,16 +54,15 @@ ORIGIN_COUNTRIES = [
 ]
 
 MICRO_TOUCHES = {
-    "Gold": ["In‑room Champagne", "Upgrade to Marina‑view suite", "Hand‑written note"],
-    "Elite": ["BMW airport transfer", "Private check‑in lounge", "Curated Spotify playlist"],
+    "Gold": ["In-room Champagne", "Upgrade to Marina-view suite", "Hand-written note"],
+    "Elite": ["BMW airport transfer", "Private check-in lounge", "Curated Spotify playlist"],
     "Silver": ["Welcome mocktail", "Late checkout request", "City tips card"],
-    "Bronze": ["Singapore sling voucher", "Early check‑in wait‑list", "HSR Wi‑Fi code"],
+    "Bronze": ["Singapore Sling voucher", "Early check-in wait-list", "HSR Wi-Fi code"],
 }
 
 ################################################################################
-# --------------------------- DATA GENERATION ---------------------------------#
+# DATA GENERATION
 ################################################################################
-
 
 def _random_id(size: int = 8) -> str:
     """Generate a pseudo guest ID."""
@@ -69,14 +70,14 @@ def _random_id(size: int = 8) -> str:
 
 
 def generate_synthetic_reservations(n: int = N_GUESTS) -> pd.DataFrame:
+    """Create a DataFrame of synthetic reservation records."""
     base_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    arrivals = []
+    arrivals: list[dict[str, object]] = []
     for _ in range(n):
         guest_id = _random_id()
         loyalty = random.choices(LOYALTY_TIERS, weights=[0.4, 0.3, 0.2, 0.1])[0]
         ig_level = random.choices(IG_ACTIVITY_LEVEL, weights=[0.5, 0.35, 0.15])[0]
         country = random.choice(ORIGIN_COUNTRIES)
-        # Arrival within first 15 min window (for demo simplicity)
         arrival_delta = timedelta(minutes=random.randint(0, ARRIVAL_WINDOW_MIN))
         arrival_ts = base_date + arrival_delta
         fx_risk = np.clip(np.random.normal(0.5, 0.2), 0.0, 1.0)  # 0 = low, 1 = high
@@ -94,16 +95,16 @@ def generate_synthetic_reservations(n: int = N_GUESTS) -> pd.DataFrame:
 
 
 def generate_trend_signals(countries: list[str]) -> pd.DataFrame:
-    trend_score = np.random.randint(30, 100, size=len(countries))  # mock Google Trends
+    """Create mock Google Trends scores for each country."""
+    trend_score = np.random.randint(30, 100, size=len(countries))
     return pd.DataFrame({"origin_country": countries, "trend_score": trend_score})
 
 ################################################################################
-# ---------------------- PERSONALIZATION SCORING ------------------------------#
+# PERSONALIZATION SCORING
 ################################################################################
 
-
 def calculate_personalization_score(row: pd.Series, weights: dict[str, float]) -> float:
-    # Map categorical to numeric for simple linear score
+    """Compute a weighted personalization score for a single guest."""
     loyalty_val = {
         "Bronze": 0.2,
         "Silver": 0.4,
@@ -124,16 +125,15 @@ def calculate_personalization_score(row: pd.Series, weights: dict[str, float]) -
 
 
 def recommend_micro_touch(row: pd.Series) -> str:
-    tier = row["loyalty_tier"]
-    return random.choice(MICRO_TOUCHES[tier])
+    """Return a randomized micro-touch recommendation based on loyalty tier."""
+    return random.choice(MICRO_TOUCHES[row["loyalty_tier"]])
 
 ################################################################################
-# ------------------------------ MAIN APP -------------------------------------#
+# MAIN APP
 ################################################################################
-
 
 def main() -> None:
-    st.sidebar.title("FIPE – Segmentation Weights")
+    st.sidebar.title("FIPE - Segmentation Weights")
     weight_loyalty = st.sidebar.slider("Loyalty", 0.0, 5.0, 3.0, 0.1)
     weight_ig = st.sidebar.slider("IG Activity", 0.0, 5.0, 2.0, 0.1)
     weight_trend = st.sidebar.slider("Trend Demand", 0.0, 5.0, 2.5, 0.1)
@@ -169,7 +169,6 @@ def main() -> None:
             x="personalization_score",
             nbins=20,
             title="Personalization Score Histogram",
-            color_discrete_sequence=[None],  # adhere to default color palette
         )
         st.plotly_chart(fig_hist, use_container_width=True)
 
@@ -208,22 +207,4 @@ def main() -> None:
     csv = df[[
         "guest_id",
         "loyalty_tier",
-        "arrival_ts",
-        "origin_country",
-        "personalization_score",
-        "recommendation",
-    ]].to_csv(index=False)
-    st.download_button(
-        label="Download Arrival Playbook (CSV)",
-        data=csv,
-        file_name="fipe_arrival_playbook.csv",
-        mime="text/csv",
-    )
-
-    st.caption(
-        "\u24D8  All data is randomly generated.  Score formula is illustrative only."
-    )
-
-
-if __name__ == "__main__":
-    main()
+        "arrival
